@@ -1,15 +1,16 @@
 suppressMessages(require(Seurat))
 suppressMessages(require(Matrix))
 #suppressMessages(require(DoubletFinder))
+#there are tetraploidy samples, so avoid deleting tetracells by using DoubletFinder
 library(hdf5r)
 
 # 使用Read10X_h5函数读取h5文件
-CTRL <- Seurat::Read10X_h5(filename = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/20240415/per_sample_outs/1/count/1.h5", use.names = TRUE)
-MPS1ip1 <- Seurat::Read10X_h5(filename = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/20240415/per_sample_outs/3/count/3.h5", use.names = TRUE)
-MPS1ip6 <- Seurat::Read10X_h5(filename = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/3/count/3.h5", use.names = TRUE)
-MPS1ip12 <- Seurat::Read10X_h5(filename = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/6/count/6.h5", use.names = TRUE)
-WGDp1 <- Seurat::Read10X_h5(filename = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/2/count/2.h5", use.names = TRUE)
-WGDp7 <- Seurat::Read10X_h5(filename = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/5/count/5.h5", use.names = TRUE)
+CTRL <- Seurat::Read10X_h5(filename = "/Users/Desktop/がん研/experiment/scRNC-seq/20240415/per_sample_outs/1/count/1.h5", use.names = TRUE)
+MPS1ip1 <- Seurat::Read10X_h5(filename = "/Users/Desktop/がん研/experiment/scRNC-seq/20240415/per_sample_outs/3/count/3.h5", use.names = TRUE)
+MPS1ip6 <- Seurat::Read10X_h5(filename = "/Users/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/3/count/3.h5", use.names = TRUE)
+MPS1ip12 <- Seurat::Read10X_h5(filename = "/Users/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/6/count/6.h5", use.names = TRUE)
+WGDp1 <- Seurat::Read10X_h5(filename = "/Users/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/2/count/2.h5", use.names = TRUE)
+WGDp7 <- Seurat::Read10X_h5(filename = "/Users/Desktop/がん研/experiment/scRNC-seq/20240612/per_sample_outs/5/count/5.h5", use.names = TRUE)
 
 # 使用CreateSeuratObject函数构建Seurat对象
 sdata.CTRL <- CreateSeuratObject(CTRL, project = "CTRL")
@@ -72,29 +73,29 @@ head(alldata@meta.data)
 # 子集化 Control 组
 CTRL_cells <- WhichCells(alldata, idents = "CTRL")
 CTRL_data <- subset(alldata, cells = CTRL_cells)
-saveRDS(CTRL_data, file = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/CTRL.rds")
+saveRDS(CTRL_data, file = "/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/CTRL.rds")
 
 # 子集化 WGD 组
 WGDp1_cells <- WhichCells(alldata, idents = "WGDp1")
 WGDp1_data <- subset(alldata, cells = WGDp1_cells)
-saveRDS(WGDp1_data, file = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp1.rds")
+saveRDS(WGDp1_data, file = "/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp1.rds")
 
 # 子集化 MPS1i 组
 MPS1ip1_cells <- WhichCells(alldata, idents = "MPS1ip1")
 MPS1ip1_data <- subset(alldata, cells = MPS1ip1_cells)
-saveRDS(MPS1ip1_data, file = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip1.rds")
+saveRDS(MPS1ip1_data, file = "/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip1.rds")
 
 # 子集化 MPS1i 组
 MPS1ip6_cells <- WhichCells(alldata, idents = "MPS1ip6")
 MPS1ip6_data <- subset(alldata, cells = MPS1ip6_cells)
-saveRDS(MPS1ip6_data, file = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip6.rds")
+saveRDS(MPS1ip6_data, file = "/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip6.rds")
 
 # 子集化 MPS1i 组
 MPS1ip12_cells <- WhichCells(alldata, idents = "MPS1ip12")
 MPS1ip12_data <- subset(alldata, cells = MPS1ip12_cells)
-saveRDS(MPS1ip12_data, file = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip12.rds")
+saveRDS(MPS1ip12_data, file = "/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip12.rds")
 
 # 子集化 MPS1i 组
 WGDp7_cells <- WhichCells(alldata, idents = "WGDp7")
 WGDp7_data <- subset(alldata, cells = WGDp7_cells)
-saveRDS(WGDp7_data, file = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp7.rds")
+saveRDS(WGDp7_data, file = "/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp7.rds")
