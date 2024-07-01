@@ -3,12 +3,12 @@ library(infercnv)
 library(Matrix)
 
 # 读取数据文件
-data1 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/CTRL.rds")
-data2 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip1.rds")
-data3 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip6.rds")
-data4 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip12.rds")
-data5 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp1.rds")
-data6 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp7.rds")
+data1 <- readRDS("/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/CTRL.rds")
+data2 <- readRDS("/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip1.rds")
+data3 <- readRDS("/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip6.rds")
+data4 <- readRDS("/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/MPS1ip12.rds")
+data5 <- readRDS("/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp1.rds")
+data6 <- readRDS("/Users/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/WGDp7.rds")
 
 # 提取基因表达计数数据
 rna_CTRL <- data1[["RNA"]]$`counts.Gene Expression.CTRL`
@@ -74,7 +74,7 @@ colnames(infercnv_expression_matrix) <- sub("^(CTRL_|MPS1ip1_|MPS1ip6_|MPS1ip12_
 head(colnames(infercnv_expression_matrix))
 
 # 加载注释文件并指定列名
-annotations <- read.table("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/anno/mixanno.txt", header = FALSE, sep = "\t", col.names = c("Cell_Name", "Annotation"))
+annotations <- read.table("/Users/Desktop/がん研/experiment/scRNC-seq/summary/anno/mixanno.txt", header = FALSE, sep = "\t", col.names = c("Cell_Name", "Annotation"))
 
 # 找出注释文件中存在但在 infercnv_expression_matrix 中不存在的细胞名称
 extra_cells_in_annotations <- setdiff(annotations$Cell_Name, colnames(infercnv_expression_matrix))
@@ -98,7 +98,7 @@ annotations_filtered$Cell_Name <- trimws(annotations_filtered$Cell_Name)
 annotations_filtered$Annotation <- trimws(annotations_filtered$Annotation)
 
 # 将过滤后的注释文件保存为临时文件
-write.table(annotations_filtered, file = "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/anno/filteredmixanno.txt", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(annotations_filtered, file = "/Users/Desktop/がん研/experiment/scRNC-seq/summary/anno/filteredmixanno.txt", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 # 重複行名の特定
 anno_data <- read.table("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/anno/filteredmix.txt", header = FALSE, sep = "\t")
@@ -124,7 +124,7 @@ infercnv_obj = infercnv::run(infercnv_obj,
                              output_format="pdf",
                              num_threads = 8,
                              cutoff= 0.1, # use 1 for smart-seq, 0.1 for 10x-genomics
-                             out_dir="/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/mix-output",  # dir is auto-created for storing outputs
+                             out_dir="/Users/Desktop/がん研/experiment/scRNC-seq/summary/mix-output",  # dir is auto-created for storing outputs
                              window_length = 201, # 51 is way to small
                              cluster_by_groups=TRUE, # cluster
                              HMM=TRUE, # turn on to auto-run the HMM prediction of CNV levels
@@ -139,7 +139,7 @@ infercnv_obj_medianfiltered = infercnv::apply_median_filtering(infercnv_obj)
 
 # 绘制CNV图
 infercnv::plot_cnv(infercnv_obj_medianfiltered,
-                   out_dir="/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/mix-output",
+                   out_dir="/Users/Desktop/がん研/experiment/scRNC-seq/summary/mix-output",
                    output_format="pdf",
                    output_filename='infercnv.median_filtered',
                    x.range="auto",
