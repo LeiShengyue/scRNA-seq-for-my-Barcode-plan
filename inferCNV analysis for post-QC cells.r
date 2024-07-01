@@ -1,3 +1,4 @@
+#data after QC
 library(Seurat)
 library(infercnv)
 library(Matrix)
