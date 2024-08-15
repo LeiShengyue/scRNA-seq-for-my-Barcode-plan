@@ -1,63 +1,62 @@
-#CNV+矩阵的火山图制作
-#QC data
+# Volcano Plot for CNV+ Matrix
+# Load necessary libraries
 library(Seurat)
 library(dplyr)
 library(ggplot2)
 library(ggrepel)
 
-#读取已处理的对象
-data1 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample/CTRL.rds")
-data2 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ matrix data/CNV+ subcluster matrix/s23-MPS1ip6.rds")
-#data_s23 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ matrix data/CNV+ subcluster matrix/s23-MPS1ip6.rds")
-#data_s5 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ matrix data/CNV+ subcluster matrix/s5-MPS1ip6.rds")
-#data_s10 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ matrix data/CNV+ subcluster matrix/s10-MPS1ip1.rds")
-#data_s20 <- readRDS("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ matrix data/CNV+ subcluster matrix/s2-MPS1ip1.rds")
+# Load processed objects
+data1 <- readRDS("/path/to/CTRL.rds")
+data2 <- readRDS("/path/to/s23-MPS1ip6.rds")
+#data_s23 <- readRDS("/path/to/s23-MPS1ip6.rds")
+#data_s5 <- readRDS("/path/to/s5-MPS1ip6.rds")
+#data_s10 <- readRDS("/path/to/s10-MPS1ip1.rds")
+#data_s20 <- readRDS("/path/to/s2-MPS1ip1.rds")
 
-
-# 提取特定层的数据
+# Extract specific layer data
 counts_CTRL <- data1[["RNA"]]$`counts.Gene Expression.CTRL`
 #counts_MPS1ip1 <- data2[["RNA"]]$`counts.Gene Expression.MPS1ip1`
 
-# 创建Seurat对象
+# Create Seurat object
 seurat_obj1 <- CreateSeuratObject(counts = counts_CTRL)
-seurat_obj1$group <- "CTRL"  # 添加group列并标记为CTRL
+seurat_obj1$group <- "CTRL"  # Add a group column labeled as CTRL
 seurat_obj2 <- CreateSeuratObject(data2)
-seurat_obj2$group <- "s23_MPS1ip6"  # 添加group列并标记为MPS1i
+seurat_obj2$group <- "s23_MPS1ip6"  # Add a group column labeled as MPS1i
 
-# 数据整合与标准化
+# Data integration and normalization
 seurat_obj <- merge(seurat_obj1, y = seurat_obj2)
 seurat_obj <- NormalizeData(seurat_obj)
 
-# 选择变量特征
+# Select variable features
 seurat_obj <- FindVariableFeatures(seurat_obj)
 
-# 数据缩放和PCA分析
+# Scaling and PCA analysis
 seurat_obj <- ScaleData(seurat_obj)
 seurat_obj <- RunPCA(seurat_obj)
 
-# 连接数据层
+# Join data layers
 seurat_obj <- JoinLayers(seurat_obj)
 
-# 确认群集分配
+# Check cluster assignments
 table(Idents(seurat_obj))
 
-# 差异基因表达分析
+# Differential gene expression analysis
 Idents(seurat_obj) <- seurat_obj$group
 group_markers <- FindMarkers(seurat_obj, ident.1 = "MPS1ip1", ident.2 = "CTRL", min.pct = 0.2)
 
-# 连接数据层
+# Join data layers
 seurat_obj <- JoinLayers(seurat_obj)
 
-# 标记显著差异基因
+# Mark significant differential genes
 group_markers$logp <- -log10(group_markers$p_val_adj)
 group_markers$gene <- rownames(group_markers)
 group_markers$color <- ifelse(group_markers$p_val_adj < 0.05 & abs(group_markers$avg_log2FC) > 0.5, 
                               ifelse(group_markers$avg_log2FC < -0.5 & group_markers$p_val_adj < 0.05, "lightblue", "pink"), "lightgrey")
 
-# 选择显著基因
+# Select significant genes
 data111 <- subset(group_markers, group_markers$p_val_adj < 0.05 & abs(group_markers$avg_log2FC) > 1)
 
-# 绘制火山图
+# Plot the volcano plot
 ggplot(group_markers, aes(x = avg_log2FC, y = -log10(p_val_adj))) +
     geom_point(aes(color = color)) +
     scale_color_manual(values = c("lightblue" = "lightblue", "pink" = "pink", "lightgrey" = "lightgrey")) +
@@ -84,17 +83,15 @@ ggplot(group_markers, aes(x = avg_log2FC, y = -log10(p_val_adj))) +
           panel.grid.major = element_blank(),
           plot.background = element_rect(fill = 'transparent', colour = 'black'))
 
-# 筛选表达上升的基因
+# Filter genes with increased expression
 up_genes <- group_markers %>%
   filter(avg_log2FC > 0.5 & -log10(p_val_adj) > 10)
 
 down_genes <- group_markers %>%
   filter(avg_log2FC < -0.5 & -log10(p_val_adj) > 10)
 
-# 导出为文本文件
-#write.table(up_genes, "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ DEG/genes/Up_MPS1ip1.txt", row.names = FALSE, quote = FALSE, sep = "\t")
-#write.table(down_genes, "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ DEG/genes/Down_MPS1ip1.txt", row.names = FALSE, quote = FALSE, sep = "\t")
-write.table(up_genes, "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ subcluster-MPS1i/genes/Up_s23_MPS1ip6.txt", row.names = FALSE, quote = FALSE, sep = "\t")
-write.table(down_genes, "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/CNV+ subcluster-MPS1i/genes/Down_s23_MPS1ip6.txt", row.names = FALSE, quote = FALSE, sep = "\t")
-
-
+# Export to text files
+#write.table(up_genes, "/path/to/Up_MPS1ip1.txt", row.names = FALSE, quote = FALSE, sep = "\t")
+#write.table(down_genes, "/path/to/Down_MPS1ip1.txt", row.names = FALSE, quote = FALSE, sep = "\t")
+write.table(up_genes, "/path/to/Up_s23_MPS1ip6.txt", row.names = FALSE, quote = FALSE, sep = "\t")
+write.table(down_genes, "/path/to/Down_s23_MPS1ip6.txt", row.names = FALSE, quote = FALSE, sep = "\t")
