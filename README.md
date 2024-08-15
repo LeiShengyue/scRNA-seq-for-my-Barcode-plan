@@ -1,4 +1,4 @@
 # scRNA-seq for My Barcode Plan
-Recording of the Codes Used for Analyzing My Barcoded Aneuploidy Cells
+Record of Code Used for Analyzing scRNA-seq data of Barcoded Aneuploidy Cells
 
-My study focuses on tracking Chromosomal Instability (CIN)-induced cells from normal states to malignancy using scRNA-seq and cell barcodes.
+My research centers on tracking the progression of Chromosomal Instability (CIN)-induced cells from a normal state to malignancy, utilizing single-cell RNA sequencing (scRNA-seq) and cell barcoding.
