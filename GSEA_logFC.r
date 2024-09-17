@@ -6,7 +6,7 @@ library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(ggridges)
-setwd("/Users/scRNC-seq/summary/GSEA/")
+setwd("/Users/scRNC-seq/GSEA/")
 data = read.table("MPS1ip6_DEG.txt",header=TRUE,sep="\t")
 colnames(data)[1]="SYMBOL"
 head(data)
