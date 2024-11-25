@@ -38,3 +38,5 @@ dev.off()
 pdf("Fishplot2.pdf", width = 4, height = 2)
 fishPlot(fish2, bg.type = "solid", bg.col = c("#FFFFFF", "#E0E0E0", "#C0C0C0"), shape = "spline")
 dev.off()
+
+#除了fishplot还可以mullerplot，都是追踪
