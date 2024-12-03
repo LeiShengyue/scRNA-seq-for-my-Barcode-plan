@@ -6,7 +6,7 @@ library(ggplot2)
 library(infercnv)
 
 # 设置工作目录
-setwd(file.path("/Users/scRNC-seq/summary/QCsample"))
+setwd(file.path("/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/summary/QCsample"))
 
 # 读取所有数据集
 data_CTRL <- readRDS("CTRL.rds")
@@ -202,6 +202,35 @@ head(unmatched_cells)
 # 修正子集化
 seurat_object <- subset(seurat_object, cells = matching_cells)
 
+#向seurat文件里添加barcode情报
+# 读取文件
+file_path <- "/Users/asakawayuuki/Desktop/がん研/experiment/scRNC-seq/BCD/Passage6+12 紐付け/Barcode-WGDPassage6+12.txt"
+barcode_data <- read.table(file_path, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+# 查看前几行
+head(barcode_data)
+
+# 提取 Seurat 对象中的细胞名称
+seurat_cells <- colnames(seurat_object)
+
+# 检查匹配的数量
+matching_cells <- intersect(seurat_cells, barcode_data$CellName)
+length(matching_cells)
+
+# 确保文件中的细胞名和 Seurat 对象的列名匹配
+rownames(barcode_data) <- barcode_data$CellName
+
+# 添加 barcode 列到 Seurat 对象
+seurat_object$barcode <- barcode_data[seurat_cells, "Barcode"]
+
+# 检查结果
+head(seurat_object@meta.data)
+
+# 创建 DimPlot 图表，移除所有标注和图例
+DimPlot(seurat_object, reduction = "umap", group.by = 'barcode', label = FALSE, repel = FALSE) +
+  theme_void() +                          # 移除坐标轴和背景
+  theme(legend.position = "none") +       # 移除图例
+  labs(title = NULL, subtitle = NULL, caption = NULL)  # 移除标题和其他注解
 
 # 加载必要的包
 library(dplyr)
