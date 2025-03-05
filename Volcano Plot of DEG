@@ -1,0 +1,225 @@
+# Volcano Plot for DEG
+#DEG和Volcano画图，2025.03.04
+#先做DEG分析再画火山图的流程
+
+#DEG analysis of QC data
+library(Seurat)
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+
+setwd(file.path("/Users/leishengyue/Desktop/data/2024/scRNC-seq/summary/QCsample"))
+# 读取已处理的对象
+data1 <- readRDS("CTRL.rds")
+
+data2 <- readRDS("CNV+_MPS1ip6.rds")
+data3 <- readRDS("CNV+_MPS1ip12.rds")
+
+data4 <- readRDS("CNV+_WGDp6.rds")
+data5 <- readRDS("CNV+_WGDp12.rds")
+
+# 提取特定层的数据
+counts_CTRL <- data1[["RNA"]]$`counts.Gene Expression.CTRL`
+# counts_MPS1ip12 <- data2[["RNA"]]$`counts.Gene Expression.MPS1ip12`
+# 如果是原本的matrix才需要提出gene expression
+
+# 创建Seurat对象
+seurat_obj1 <- CreateSeuratObject(counts = counts_CTRL)
+seurat_obj1$group <- "CTRL"  # 添加group列并标记为CTRL
+
+seurat_obj2 <- CreateSeuratObject(counts = data2)
+seurat_obj2$group <- "CNV+_MPS1ip6"  
+
+seurat_obj3 <- CreateSeuratObject(counts = data3)
+seurat_obj3$group <- "CNV+_MPS1ip12" 
+
+seurat_obj4 <- CreateSeuratObject(counts = data4)
+seurat_obj4$group <- "CNV+_WGDp6" 
+
+seurat_obj5 <- CreateSeuratObject(counts = data5)
+seurat_obj5$group <- "CNV+_WGDp12" 
+
+
+# 数据整合与标准化
+M6 <- merge(seurat_obj1, y = seurat_obj2)
+M12 <- merge(seurat_obj1, y = seurat_obj3)
+W6 <- merge(seurat_obj1, y = seurat_obj4)
+W12 <- merge(seurat_obj1, y = seurat_obj5)
+
+M6 <- NormalizeData(M6)
+M12 <- NormalizeData(M12)
+W6 <- NormalizeData(W6)
+W12 <- NormalizeData(W12)
+
+# 选择变量特征
+M6 <- FindVariableFeatures(M6)
+M12 <- FindVariableFeatures(M12)
+W6 <- FindVariableFeatures(W6)
+W12 <- FindVariableFeatures(W12)
+
+# seurat_obj <- FindVariableFeatures(seurat_obj)
+
+# 数据缩放和PCA分析
+M6 <- ScaleData(M6)
+M12 <- ScaleData(M12)
+W6 <- ScaleData(W6)
+W12 <- ScaleData(W12)
+
+M6 <- RunPCA(M6)
+M12 <- RunPCA(M12)
+W6 <- RunPCA(W6)
+W12 <- RunPCA(W12)
+
+# seurat_obj <- ScaleData(seurat_obj)
+# seurat_obj <- RunPCA(seurat_obj)
+
+# 连接数据层
+M6 <- JoinLayers(M6)
+M12 <- JoinLayers(M12)
+W6 <- JoinLayers(W6)
+W12 <- JoinLayers(W12)
+
+# seurat_obj <- JoinLayers(seurat_obj)
+
+# # 确认群集分配
+# table(Idents(seurat_obj))
+
+# 差异基因表达分析
+Idents(M6) <- M6$group
+Idents(M12) <- M12$group
+Idents(W6) <- W6$group
+Idents(W12) <- W12$group
+
+# Idents(seurat_obj) <- seurat_obj$group
+
+#logfc.threshold是指过滤掉avg_logFC< n的基因。单细胞数据logfc.threshold>0.25基本就可以认为有差异，但是一般>0.5才认为比较显著，不过都视具体情况而定
+#要全体DEG不看显著性的时候设置logfc.threshold = 0
+MPS1ip6 <- FindMarkers(M6, ident.1 = "CNV+_MPS1ip6", ident.2 = "CTRL", min.pct = 0.2, logfc.threshold = 0)
+MPS1ip12 <- FindMarkers(M12, ident.1 = "CNV+_MPS1ip12", ident.2 = "CTRL", min.pct = 0.2, logfc.threshold = 0)
+WGDp6 <- FindMarkers(W6, ident.1 = "CNV+_WGDp6", ident.2 = "CTRL", min.pct = 0.2, logfc.threshold = 0)
+WGDp12 <- FindMarkers(W12, ident.1 = "CNV+_WGDp12", ident.2 = "CTRL", min.pct = 0.2, logfc.threshold = 0)
+
+#小看一眼
+head(MPS1ip6)
+head(MPS1ip12)
+head(WGDp6)
+head(WGDp12)
+
+#先把发现的列分一下
+MPS1ip6$group <- ifelse(MPS1ip6$p_val_adj < 0.05 & abs(MPS1ip6$avg_log2FC) > 1, 
+                              ifelse(MPS1ip6$avg_log2FC < -1 & MPS1ip6$p_val_adj < 0.05, "Down-Regulated", "Up-Regulated"), "Normal")
+
+MPS1ip12$group <- ifelse(MPS1ip12$p_val_adj < 0.05 & abs(MPS1ip12$avg_log2FC) > 1, 
+                              ifelse(MPS1ip12$avg_log2FC < -1 & MPS1ip12$p_val_adj < 0.05, "Down-Regulated", "Up-Regulated"), "Normal")
+
+WGDp6$group <- ifelse(WGDp6$p_val_adj < 0.05 & abs(WGDp6$avg_log2FC) > 1, 
+                              ifelse(WGDp6$avg_log2FC < -1 & WGDp6$p_val_adj < 0.05, "Down-Regulated", "Up-Regulated"), "Normal")
+
+WGDp12$group <- ifelse(WGDp12$p_val_adj < 0.05 & abs(WGDp12$avg_log2FC) > 1, 
+                              ifelse(WGDp12$avg_log2FC < -1 & WGDp12$p_val_adj < 0.05, "Down-Regulated", "Up-Regulated"), "Normal")
+
+# 筛选出显著差异的基因（例如 p 值小于 0.05，logFC > 1 或 < -1）
+MPS1ip6$gene <- rownames(MPS1ip6)
+labeled_M6 <- MPS1ip6 %>%
+    filter(p_val_adj < 0.05 & (avg_log2FC > 1 | avg_log2FC < -1))
+
+MPS1ip12$gene <- rownames(MPS1ip12)
+labeled_M12 <- MPS1ip12 %>%
+    filter(p_val_adj < 0.05 & (avg_log2FC > 1 | avg_log2FC < -1))
+
+WGDp6$gene <- rownames(WGDp6)
+labeled_W6 <- WGDp6 %>%
+    filter(p_val_adj < 0.05 & (avg_log2FC > 1 | avg_log2FC < -1))
+
+WGDp12$gene <- rownames(WGDp12)
+labeled_W12 <- WGDp12 %>%
+    filter(p_val_adj < 0.05 & (avg_log2FC > 1 | avg_log2FC < -1))
+
+#开始画图
+#MPS1ip6
+options(ggrepel.max.overlaps = Inf)
+VolcanoM6 <- ggplot(MPS1ip6, aes(x = avg_log2FC, y = -log10(p_val_adj), colour=group)) + 
+  geom_point(alpha=0.8) + 
+  ylim(0,150) +
+  theme_bw() + 
+  theme(
+    legend.position = "right",            
+    panel.background = element_rect(fill = "white"), 
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(),  
+    plot.background = element_rect(fill = "white")) +
+    geom_text_repel(data = labeled_M6, aes(label = gene), size = 3, max.overlaps = 10) +  # 仅标注显著差异基因
+  scale_color_manual(values=c("#2166ac", "grey","#b2182b")) +
+  labs(colour="Differential Expression") + 
+  ggtitle(paste0("MPS1ip6/CTRL")) +
+  geom_vline(xintercept=c(-1,1),lty=2,col="black",lwd=0.4) +
+  geom_hline(yintercept=0.301,lty=2,col="black",lwd=0.4) +  
+  labs(x="log2 Fold Change",y="-log10 P-Value Adj")+guides(colour = guide_legend(override.aes = list(size = 4)))
+
+VolcanoM6
+
+#MPS1ip12
+options(ggrepel.max.overlaps = Inf)
+VolcanoM12 <- ggplot(MPS1ip12, aes(x = avg_log2FC, y = -log10(p_val_adj), colour=group)) + 
+  geom_point(alpha=0.8) + 
+  ylim(0,150) +
+  theme_bw() + 
+  theme(
+    legend.position = "right",            
+    panel.background = element_rect(fill = "white"), 
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(),  
+    plot.background = element_rect(fill = "white")) +
+    geom_text_repel(data = labeled_M12, aes(label = gene), size = 3, max.overlaps = 10) +  # 仅标注显著差异基因
+  scale_color_manual(values=c("#2166ac", "grey","#b2182b")) +
+  labs(colour="Differential Expression") + 
+  ggtitle(paste0("MPS1ip12/CTRL")) +
+  geom_vline(xintercept=c(-1,1),lty=2,col="black",lwd=0.4) +
+  geom_hline(yintercept=0.301,lty=2,col="black",lwd=0.4) +  
+  labs(x="log2 Fold Change",y="-log10 P-Value Adj")+guides(colour = guide_legend(override.aes = list(size = 4)))
+
+VolcanoM12
+
+#WGDp6
+options(ggrepel.max.overlaps = Inf)
+VolcanoW6 <- ggplot(WGDp6, aes(x = avg_log2FC, y = -log10(p_val_adj), colour=group)) + 
+  geom_point(alpha=0.8) + 
+  ylim(0,200) +
+  theme_bw() + 
+  theme(
+    legend.position = "right",            
+    panel.background = element_rect(fill = "white"), 
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(),  
+    plot.background = element_rect(fill = "white")) +
+    geom_text_repel(data = labeled_W6, aes(label = gene), size = 3, max.overlaps = 10) +  # 仅标注显著差异基因
+  scale_color_manual(values=c("#2166ac", "grey","#b2182b")) +
+  labs(colour="Differential Expression") + 
+  ggtitle(paste0("WGDp6/CTRL")) +
+  geom_vline(xintercept=c(-1,1),lty=2,col="black",lwd=0.4) +
+  geom_hline(yintercept=0.301,lty=2,col="black",lwd=0.4) +  
+  labs(x="log2 Fold Change",y="-log10 P-Value Adj")+guides(colour = guide_legend(override.aes = list(size = 4)))
+
+VolcanoW6
+
+#WGDp6
+options(ggrepel.max.overlaps = Inf)
+VolcanoW12 <- ggplot(WGDp12, aes(x = avg_log2FC, y = -log10(p_val_adj), colour=group)) + 
+  geom_point(alpha=0.8) + 
+  ylim(0,200) +
+  theme_bw() + 
+  theme(
+    legend.position = "right",            
+    panel.background = element_rect(fill = "white"), 
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(),  
+    plot.background = element_rect(fill = "white")) +
+    geom_text_repel(data = labeled_W12, aes(label = gene), size = 3, max.overlaps = 10) +  # 仅标注显著差异基因
+  scale_color_manual(values=c("#2166ac", "grey","#b2182b")) +
+  labs(colour="Differential Expression") + 
+  ggtitle(paste0("WGDp12/CTRL")) +
+  geom_vline(xintercept=c(-1,1),lty=2,col="black",lwd=0.4) +
+  geom_hline(yintercept=0.301,lty=2,col="black",lwd=0.4) +  
+  labs(x="log2 Fold Change",y="-log10 P-Value Adj")+guides(colour = guide_legend(override.aes = list(size = 4)))
+
+VolcanoW12
