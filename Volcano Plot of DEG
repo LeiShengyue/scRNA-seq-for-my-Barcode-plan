@@ -60,15 +60,15 @@ W12 <- FindVariableFeatures(W12)
 # seurat_obj <- FindVariableFeatures(seurat_obj)
 
 # 数据缩放和PCA分析
-M6 <- ScaleData(M6)
-M12 <- ScaleData(M12)
-W6 <- ScaleData(W6)
-W12 <- ScaleData(W12)
+# M6 <- ScaleData(M6)
+# M12 <- ScaleData(M12)
+# W6 <- ScaleData(W6)
+# W12 <- ScaleData(W12)
 
-M6 <- RunPCA(M6)
-M12 <- RunPCA(M12)
-W6 <- RunPCA(W6)
-W12 <- RunPCA(W12)
+# M6 <- RunPCA(M6)
+# M12 <- RunPCA(M12)
+# W6 <- RunPCA(W6)
+# W12 <- RunPCA(W12)
 
 # seurat_obj <- ScaleData(seurat_obj)
 # seurat_obj <- RunPCA(seurat_obj)
@@ -202,7 +202,7 @@ VolcanoW6 <- ggplot(WGDp6, aes(x = avg_log2FC, y = -log10(p_val_adj), colour=gro
 
 VolcanoW6
 
-#WGDp6
+#WGDp12
 options(ggrepel.max.overlaps = Inf)
 VolcanoW12 <- ggplot(WGDp12, aes(x = avg_log2FC, y = -log10(p_val_adj), colour=group)) + 
   geom_point(alpha=0.8) + 
